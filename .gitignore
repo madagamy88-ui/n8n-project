@@ -1,0 +1,13 @@
+# Ignore local n8n data
+.n8n/
+binaryData/
+ssh/
+git/
+nodes/
+crash.journal
+n8nEventLog*.log
+
+# Ignore system files
+*.sqlite
+*.env
+*.log

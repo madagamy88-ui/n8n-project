@@ -1,0 +1,273 @@
+{
+  "name": "Sales Group - Assign Lead (FIFO, CE-ready, Fixed)",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1504,
+        160
+      ],
+      "id": "01404880-b87c-4e47-9474-6c1d17dd1837",
+      "webhookId": "8bfd6a00-3b88-41f6-9612-f2b4983a8698",
+      "credentials": {
+        "telegramApi": {
+          "id": "QWgyNUFinBllzqPC",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const text = $json.message?.text || '';\nconst chatId = $json.message?.chat?.id;\nconst salesGroupId = -4843620477;\n\nif (chatId !== salesGroupId) return [];\nif (!text.toLowerCase().includes('/lead')) return [];\n\nconst from = $json.message.from || {};\nconst username = from.username || '';\n\nreturn [{\n  json: {\n    assignedBy: username || from.first_name || '',\n    assignedByUsername: username,\n    assignedByName: from.first_name || '',\n    chatId\n  }\n}];"
+      },
+      "name": "Check Command",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -1264,
+        160
+      ],
+      "id": "82e8c8bc-bbe2-4aaa-8ab1-111ad8ff4da8"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1lNVeXO3-N1O4YT9OVMW1u_JEzdjegxGYXpywMn7kp3Y",
+          "mode": "list",
+          "cachedResultName": "testbot",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lNVeXO3-N1O4YT9OVMW1u_JEzdjegxGYXpywMn7kp3Y/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lNVeXO3-N1O4YT9OVMW1u_JEzdjegxGYXpywMn7kp3Y/edit#gid=0"
+        },
+        "options": {}
+      },
+      "name": "Read All Leads",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [
+        -1008,
+        160
+      ],
+      "id": "377c9145-836c-4c54-8406-cb25cf7b2628",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "idsufP1fukB7U7Vr",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const cmd = $items(\"Check Command\", 0).json;\n\nfor (let i = 0; i < items.length; i++) {\n  const row = items[i].json;\n  const status = (row.Status || '').trim().toLowerCase();\n  if (status === 'open') {\n    const rowIndex = i + 2; // row 2 is first data row\n    return [{ json: { found: true, rowIndex, ...row, ...cmd } }];\n  }\n}\n\nreturn [{ json: { found: false, ...cmd } }];"
+      },
+      "name": "Find First Open",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        160
+      ],
+      "id": "f80428eb-385f-4865-b353-fe8e0e56babb"
+    },
+    {
+      "parameters": {
+        "functionCode": "const found = []; const notFound = [];\nfor (const it of items) {\n  if (it.json.found) found.push(it);\n  else notFound.push(it);\n}\nreturn [found, notFound];"
+      },
+      "name": "Route Found / NotFound",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -512,
+        160
+      ],
+      "id": "78011dde-6456-455d-8159-f4588e0c8a00"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1lNVeXO3-N1O4YT9OVMW1u_JEzdjegxGYXpywMn7kp3Y",
+          "mode": "list",
+          "cachedResultName": "testbot",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lNVeXO3-N1O4YT9OVMW1u_JEzdjegxGYXpywMn7kp3Y/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lNVeXO3-N1O4YT9OVMW1u_JEzdjegxGYXpywMn7kp3Y/edit#gid=0"
+        },
+        "columnToMatchOn": "Chat ID",
+        "valueToMatchOn": "={{$json[\"Chat ID\"]}}",
+        "fieldsUi": {
+          "values": [
+            {
+              "column": "Status",
+              "fieldValue": "={{$json[\"assignedByUsername\"] ? 'Taken by @' + $json[\"assignedByUsername\"] : 'Taken by ' + $json[\"assignedBy\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Update Lead Status",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [
+        -256,
+        80
+      ],
+      "id": "272fdc4d-208b-4c6c-81ee-d2b9191a1149",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "idsufP1fukB7U7Vr",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "-4843620477",
+        "text": "✅ Lead assigned to {{$json.assignedByUsername ? '@' + $json.assignedByUsername : $json.assignedBy}}\n\nFirst Name: {{$json['First Name']}}\nMessage: {{$json['Message']}}",
+        "additionalFields": {}
+      },
+      "name": "Reply Lead Found",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        0,
+        80
+      ],
+      "id": "e871c7db-2ab1-47a3-8e74-b173057676e6",
+      "webhookId": "019e1a2e-a06e-4f4f-a068-d1b23a46b1e1",
+      "credentials": {
+        "telegramApi": {
+          "id": "QWgyNUFinBllzqPC",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "-4843620477",
+        "text": "🚫 No open leads right now",
+        "additionalFields": {}
+      },
+      "name": "Reply No Lead",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        0,
+        240
+      ],
+      "id": "3fddaa28-b3fb-4f2b-95dc-acee3ecb9eb7",
+      "webhookId": "a3a75223-713c-43ab-aac1-4182ae701213",
+      "credentials": {
+        "telegramApi": {
+          "id": "QWgyNUFinBllzqPC",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Command": {
+      "main": [
+        [
+          {
+            "node": "Read All Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read All Leads": {
+      "main": [
+        [
+          {
+            "node": "Find First Open",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find First Open": {
+      "main": [
+        [
+          {
+            "node": "Route Found / NotFound",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Found / NotFound": {
+      "main": [
+        [
+          {
+            "node": "Update Lead Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Lead Status": {
+      "main": [
+        [
+          {
+            "node": "Reply Lead Found",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Reply No Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2502a66f-0646-4bb1-a0b6-be9bd76364d9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f4325e370cbe016080855e5c1236e153864372050241d77526cbbd9a495b3479"
+  },
+  "id": "v2U3A63VIeX23K9o",
+  "tags": []
+}

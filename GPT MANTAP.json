@@ -1,0 +1,264 @@
+{
+  "name": "GPT MANTAP",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        64
+      ],
+      "id": "44b8a46c-26b2-464e-a130-1bca8eaafc5b",
+      "webhookId": "a979e71c-a340-45ec-b485-5d1d98ada010",
+      "credentials": {
+        "telegramApi": {
+          "id": "QWgyNUFinBllzqPC",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "number": [
+            {
+              "name": "user_id",
+              "value": "={{$json[\"message\"][\"from\"][\"id\"]}}"
+            }
+          ],
+          "string": [
+            {
+              "name": "username",
+              "value": "={{$json[\"message\"][\"from\"][\"username\"] || ''}}"
+            },
+            {
+              "name": "first_name",
+              "value": "={{$json[\"message\"][\"from\"][\"first_name\"] || ''}}"
+            },
+            {
+              "name": "last_name",
+              "value": "={{$json[\"message\"][\"from\"][\"last_name\"] || ''}}"
+            },
+            {
+              "name": "message_text",
+              "value": "={{$json[\"message\"][\"text\"] || ''}}"
+            },
+            {
+              "name": "chat_id",
+              "value": "={{$json[\"message\"][\"chat\"][\"id\"]}}"
+            },
+            {
+              "name": "timestamp_iso",
+              "value": "={{ new Date($json[\"message\"][\"date\"] * 1000).toISOString() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Prepare Lead",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        64
+      ],
+      "id": "7056e3e8-f9de-445b-8221-316032e4fb5f"
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json[\"chat_id\"]}}",
+        "text": "Hello! Welcome to our store!\n\nBrowse our products: https://yourstore.com \nVisit our website: https://yourwebsite.com \n\nA sales representative will contact you shortly!",
+        "additionalFields": {}
+      },
+      "name": "Send Welcome",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        -128
+      ],
+      "id": "588f4393-41d2-41a1-a7c8-8055186be157",
+      "webhookId": "91130169-5876-4921-9a6e-aead8ee6ae6a",
+      "credentials": {
+        "telegramApi": {
+          "id": "QWgyNUFinBllzqPC",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "-4843620477",
+        "text": "=🚀 New Lead Alert!  User: {{$node[\"Prepare Lead\"].json[\"username\"] ? \"@\" + $node[\"Prepare Lead\"].json[\"username\"] : \"\"}} (ID: {{$node[\"Prepare Lead\"].json[\"user_id\"]}}) Name: {{$node[\"Prepare Lead\"].json[\"first_name\"]}} {{$node[\"Prepare Lead\"].json[\"last_name\"]}} Message: \"{{$node[\"Prepare Lead\"].json[\"message_text\"]}}\" Time: {{$node[\"Prepare Lead\"].json[\"timestamp_iso\"]}}",
+        "additionalFields": {}
+      },
+      "name": "Notify Sales Group",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        64
+      ],
+      "id": "ab382827-b5b7-4092-a7d8-16a21e8115e9",
+      "webhookId": "98824ef5-0fc0-40b4-ba03-225a413c9c5f",
+      "credentials": {
+        "telegramApi": {
+          "id": "QWgyNUFinBllzqPC",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1lNVeXO3-N1O4YT9OVMW1u_JEzdjegxGYXpywMn7kp3Y",
+          "mode": "list",
+          "cachedResultName": "testbot",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lNVeXO3-N1O4YT9OVMW1u_JEzdjegxGYXpywMn7kp3Y/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lNVeXO3-N1O4YT9OVMW1u_JEzdjegxGYXpywMn7kp3Y/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Chat ID": "={{$json[\"user_id\"]}}",
+            "First name": "={{$json[\"first_name\"]}}",
+            "Username": "={{ $json[\"username\"] ? \"@\" + $json[\"username\"] : \"\" }}",
+            "Message": "={{$json[\"message_text\"]}}",
+            "Time stamp": "={{$json[\"timestamp_iso\"] || $now}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Time stamp",
+              "displayName": "Time stamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Chat ID",
+              "displayName": "Chat ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "First name",
+              "displayName": "First name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Username",
+              "displayName": "Username",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -176,
+        256
+      ],
+      "id": "9961b662-6405-4409-965d-60e5a466836f",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "idsufP1fukB7U7Vr",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Lead": {
+      "main": [
+        [
+          {
+            "node": "Send Welcome",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notify Sales Group",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Sales Group": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4cf6f149-20c5-4be4-b1cb-5d9968c5cc66",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f4325e370cbe016080855e5c1236e153864372050241d77526cbbd9a495b3479"
+  },
+  "id": "ftPS1zUvQpMIahBF",
+  "tags": []
+}
