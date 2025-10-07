@@ -1,13 +1,12 @@
-# Ignore local n8n data
+# Ignore local n8n data and logs
 .n8n/
+*.log
+crash.journal
+database.sqlite
 binaryData/
 ssh/
-git/
 nodes/
-crash.journal
-n8nEventLog*.log
 
-# Ignore system files
-*.sqlite
-*.env
-*.log
+# Ignore Docker artifacts
+node_modules/
+.env
